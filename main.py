@@ -511,8 +511,33 @@ class Github_Issue_Classifier():
 		self.F1_Evaluation(predict_result, test_data_label)
 
 if __name__ == '__main__':
-	labels=['bug','others'] #or ['bug', 'others']
-	my_classifier=Github_Issue_Classifier(data_folder='data/',label_list=labels, use_unlabeled_data=False, saved_model='lr_model_bug.sav')
+	parser = argparse.ArgumentParser()
+	parser.add_argument('--tag', type=str, default='bug',
+	                    help='Currently supported tags: bug and enhancement.')
+	parser.add_argument('--use_unlabeled_data', type=str, default='false',
+	                    help='True or False')
+	parser.add_argument('--use_saved_model', type=str, default='true',
+	                    help='True or False')
+	args = parser.parse_args()
+	if args.tag=='bug':
+		labels=['bug','others']
+	elif args.tag=='enhancement':
+		labels=['enhancement','others']
+	else:
+		print('wrong input!')
+		sys.exit()
+	if args.use_unlabeled_data=='true' or args.use_unlabeled_data=='True':
+		use_unlabeled_data=True
+	else:
+		use_unlabeled_data=False
+	if args.use_saved_model=='true' or args.use_saved_model=='True':
+		if 'bug' in args.tag:
+			saved_model='lr_model_bug.sav'
+		else:
+			saved_model = 'lr_model_enhancement.sav'
+	else:
+		saved_model=''
+	my_classifier=Github_Issue_Classifier(data_folder='data/',label_list=labels, use_unlabeled_data=use_unlabeled_data, saved_model=saved_model)
 	#train_set, dev_set, test_set = my_classifier.Data_Preprocess_gz_file()()
 	train_set, dev_set, test_set=my_classifier.Data_Preprocess_txt_file()
 	my_classifier.Logistic_Regression(train_set, dev_set, test_set)
