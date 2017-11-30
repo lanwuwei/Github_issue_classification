@@ -7,10 +7,11 @@
 3. All the txt files in data folder contains sampled 'issueEvent' from Archive Github, the data format is json; dev_merged_annotation.json contains
 201 human annotated examples.
 
-4. The model is trained on 23523 labeled examples (may or may not include 54k unlabeled examples) in train.txt and evaluated on 201 human annotated labels
+4. The model is trained on 23523 labeled examples (may or may not include 54k unlabeled examples) in train.txt (check this [link https://drive.google.com/file/d/1R-uGfxtUj4qhOI0SL9HoM5M5BWOJX2L3/view?usp=sharing] to download and put it in ./data folder) and evaluated on 201 human annotated labels
 
-5. if you want to run this code, you need to specify the following four parameters in Github_Issue_Classifier:
-    data_folder='data/'
-    label_list=['bug','others'] or ['enhancement', 'others']
-    saved_model='saved_model.sav'
-    use_unlabeled_data=True or False
+5. if you want to run this code, make sure you have sklearn, matplotlib and other libraries installed. You also need to specify the following parameters:
+    --tag bug or enhancement
+    --use_unlabeled_data True or False
+    --use_saved_model True or False
+    example command to run:
+    python main.py --tag bug --use_unlabeled_data False --use_saved_model True
