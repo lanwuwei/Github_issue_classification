@@ -4,8 +4,7 @@
 2. Currently we consider two labels: 'bug' and 'enhancement', we merge subclass into a larger class, for example we treat
 'bug-repositiry' label as 'bug' label.
 
-3. All the txt files in data folder contains sampled 'issueEvent' from Archive Github, the data format is json; dev_merged_annotation.json contains
-201 human annotated examples.
+3. dev_merged_annotation.json in ./data folder contains 201 human annotated examples with json format. 
 
 4. The model is trained on 23523 labeled examples (may or may not include 54k unlabeled examples) in train.txt (check this link https://drive.google.com/file/d/1R-uGfxtUj4qhOI0SL9HoM5M5BWOJX2L3/view?usp=sharing to download and put it in ./data folder) and evaluated on 201 human annotated labels
 
