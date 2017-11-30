@@ -10,11 +10,11 @@
 
 5. if you want to run this code, make sure you have sklearn, matplotlib and other libraries installed. You also need to specify the following parameters:
 
-    --tag   bug or enhancement
+    --tag: bug or enhancement
     
-    --use_unlabeled_data    True or False
+    --use_unlabeled_data: True or False
     
-    --use_saved_model   True or False
+    --use_saved_model: True or False
     
     
     example command to run:
