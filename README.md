@@ -6,7 +6,7 @@
 
 3. dev_merged_annotation.json in ./data folder contains 201 human annotated examples with json format. 
 
-4. The model is trained on 23523 labeled examples (may or may not include 54k unlabeled examples) in train.txt (check this link https://drive.google.com/file/d/1R-uGfxtUj4qhOI0SL9HoM5M5BWOJX2L3/view?usp=sharing to download and put it in ./data folder) and evaluated on 201 human annotated labels
+4. The model is trained on 23k labeled examples in train.txt or 230k labeled examples in train_merged.txt (check this link https://drive.google.com/drive/folders/1K-rh9dpaiHJv2GOq73_b_silmw-lrW0S?usp=sharing to download and put it in ./data folder) and evaluated on 201 human annotated labels
 
 5. if you want to run this code, make sure you have sklearn, matplotlib and other libraries installed. You also need to specify the following parameters:
 
@@ -19,4 +19,4 @@
     
     example command to run:
     
-    python main.py --tag bug --use_unlabeled_data False --use_saved_model True
+    python main.py --tag bug --use_unlabeled_data False --use_saved_model False
