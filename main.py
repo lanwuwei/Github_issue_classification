@@ -12,6 +12,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import HashingVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 import cPickle as pickle
+from twokenize import tokenize
 from sklearn import metrics
 from sklearn.metrics import accuracy_score
 
@@ -30,7 +31,10 @@ class Github_Issue_Classifier():
 		self.use_unlabeled_data=use_unlabeled_data
 
 	def Feature_Extraction(self, data):
-		vectorizer = TfidfVectorizer(stop_words='english',min_df=10,ngram_range=(1, 2))#, min_df=5, ngram_range=(1, 3), strip_accents='ascii')
+		vectorizer = TfidfVectorizer(stop_words='english',min_df=10, max_df=0.95,ngram_range=(1, 3), max_features=10000,
+		                             norm='l1',sublinear_tf=True)
+
+		#, min_df=5, ngram_range=(1, 3), strip_accents='ascii')
 		#vectorizer = TfidfVectorizer(min_df=5, stop_words='english',ngram_range=(1, 2)) #token_pattern=r'\b\w+\b',
 		#vectorizer = HashingVectorizer(stop_words='english', ngram_range=(1, 2))
 		X = vectorizer.fit_transform(data)
@@ -193,13 +197,17 @@ class Github_Issue_Classifier():
 		#sys.exit()
 		#print(gold_label)
 		#sys.exit()
+		list_of_files=['data/train_merged.txt']#,'data/IssueCommentEvent_2015.txt']
 		for file in list_of_files:
 			print(file)
 			with open(file, 'r') as json_file:
 				data=[]
+				unlabeled_data=[]
 				label=[]
 				for line in json_file:
 					tmp = json.loads(line)
+					if tmp['id'] in self.gold_id:
+						continue
 					if tmp['type'] == 'IssuesEvent':
 						try:
 							if tmp['payload']['issue']['labels']:
@@ -236,37 +244,54 @@ class Github_Issue_Classifier():
 									data.append(content)
 							else:
 								if 'train' in file and self.use_unlabeled_data:
-									label.append(False)
+									#label.append(False)
 									#label.append('others')
 									content = ''
 									if tmp['payload']['issue']['title']:
 										content = tmp['payload']['issue']['title'].encode('utf-8') + '\t'
 									if tmp['payload']['issue']['body']:
 										content += tmp['payload']['issue']['body'].encode('utf-8')
-									data.append(content)
+									unlabeled_data.append(content)
+						except:
+							print file
+							print line
+							sys.exit()
+					elif tmp['type']=='IssueCommentEvent':
+						try:
+							content = ''
+							if tmp['payload']['issue']['title']:
+								content = tmp['payload']['issue']['title'].encode('utf-8') + '\t'
+							if tmp['payload']['issue']['body']:
+								content += tmp['payload']['issue']['body'].encode('utf-8')
+							data.append(content)
+							if len(data)==10000:
+								break
 						except:
 							print file
 							print line
 							sys.exit()
 			if 'train' in file:
 				#print(label)
-				train_set=(data, label)
+				train_set=(data, label, unlabeled_data)
 				#print(len(data))
 				#sys.exit()
-			elif 'dev' in file:
-				dev_set=(data, label)
-				#print(len(data))
 			else:
-				test_set=(data, label)
+				extra_set=(data, label)
 				#print(len(data))
 		test_set=() # test_set is not used here
 		# dev_set is replaced by gold_set, which contains 201 human annotation
+		threshold=100000
+		train_set=(train_set[0][:threshold],train_set[1][:threshold])
 		dev_set=(gold_data, gold_label)
 		#self.dev_set=dev_set
-		print('Number of training examples: %d' %(len(train_set[0])))
+		print('\nCurrent task: '+self.label_list[0]+ ' v.s. '+self.label_list[1])
+		print('Number of training examples: %d' %(len(train_set[1])))
+		print('Number of testing examples: %d' % (len(dev_set[0])))
 		data=train_set[0]+dev_set[0]#+test_set[0]
+		print('\nFeature engineering...')
+		print(len(data))
 		data=self.Feature_Extraction(data)
-		train_set=(data[:len(train_set[0])],train_set[1])
+		train_set=(data[:len(train_set[1])],train_set[1])
 		dev_set=(data[len(train_set[0]):len(train_set[0])+len(dev_set[0])], dev_set[1])
 		#test_set=(data[len(train_set[0])+len(dev_set[0]):],test_set[1])
 		return (train_set, dev_set, test_set)
@@ -394,8 +419,8 @@ class Github_Issue_Classifier():
 			R = 0
 			F = 0
 
-		print "PRECISION: %s, RECALL: %s, F1: %s" % (P, R, F)
-		print "ACCURACY: %s" % (counter / len(predict_result))
+		#print "PRECISION: %s, RECALL: %s, F1: %s" % (P, R, F)
+		#print "ACCURACY: %s" % (counter / len(predict_result))
 
 		# print "# true pos:", tp
 		# print "# false pos:", fp
@@ -463,7 +488,7 @@ class Github_Issue_Classifier():
 			print('LR')
 			logistic = linear_model.LogisticRegression()
 			classifier = logistic.fit(train_data, train_data_label)
-		#self.Check_Top_Weighted_Features(classifier, 'bug', 20)
+		self.Check_Top_Weighted_Features(classifier, self.label_list[0], 20)
 		#predict_result = classifier.predict(test_data)
 		probas = classifier.predict_proba(test_data)
 		#for item in probas:
@@ -513,10 +538,10 @@ class Github_Issue_Classifier():
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--tag', type=str, default='bug',
-	                    help='Currently supported tags: bug and enhancement.')
+	                    help='Currently supported tags: bug or enhancement.')
 	parser.add_argument('--use_unlabeled_data', type=str, default='false',
 	                    help='True or False')
-	parser.add_argument('--use_saved_model', type=str, default='true',
+	parser.add_argument('--use_saved_model', type=str, default='false',
 	                    help='True or False')
 	args = parser.parse_args()
 	if args.tag=='bug':
