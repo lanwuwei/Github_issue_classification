@@ -20,3 +20,4 @@
     example command to run:
     
     python main.py --tag bug --use_unlabeled_data False --use_saved_model False
+6. We also build CNN classifier, please check main_cnn.py and model.py
